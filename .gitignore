@@ -1,1 +1,3 @@
 result_file.*
+/.gradle/
+/build/

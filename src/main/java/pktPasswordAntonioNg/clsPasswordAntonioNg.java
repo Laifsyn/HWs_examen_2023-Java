@@ -21,6 +21,7 @@ public class clsPasswordAntonioNg {
         while (!end) {
             end = instance.spawn();
         }
+        System.out.println("Hola. Acabamos de leer");
     }
 
     boolean spawn() {
