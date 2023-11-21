@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class clsArticulo {
+class clsArticulo {
     public static void main(String[] args) {
 
     }
@@ -16,6 +16,10 @@ public class clsArticulo {
     String descripcion;
     @JsonProperty("impuesto")
     int itbms;
+
+    public int retrieve_itbms() {
+        return itbms;
+    }
 
     public void setItbms(String itbms) {
         int ret;
