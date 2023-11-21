@@ -1,4 +1,4 @@
-package com.utp.ac.antonio_ng.examen.pktCaja;
+package com.utp.ac.antonio_ng.examen.pktPersona;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
