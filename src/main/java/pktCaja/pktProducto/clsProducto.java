@@ -9,14 +9,25 @@ public class clsProducto {
     @JsonUnwrapped
     clsArticulo articulo;
 
-    public Validation<Integer, Integer> fetch(int fetching) {
+    /**
+     * Interfaz Interna
+     * @return cantidad entera del producto
+     */
+    private int fetch(int amount) {
+        return articulo.fetch(amount);
+    }
+
+    /**
+     * Intenta obtener cantidad del inventario. En caso de no poder, devuelve la cantidad positiva que quede o 0
+     */
+    public Validation<Integer, Integer> try_fetch(int amount) {
         Validation<Integer, Integer> ret;
-        if (articulo.en_inventario() >= fetching) {
-            articulo.fetch(fetching);
-            ret = Validation.valid(fetching);
-        } else // Retorna la cantidad en inventario envuelta en un "Error"
+        if (articulo.en_inventario() >= amount) {
+            ret = Validation.valid(fetch(amount));
+        } else if (articulo.en_inventario() < 0)
+            ret = Validation.invalid(0);
+        else
             ret = Validation.invalid(articulo.en_inventario());
-        
         return ret;
     }
 }
