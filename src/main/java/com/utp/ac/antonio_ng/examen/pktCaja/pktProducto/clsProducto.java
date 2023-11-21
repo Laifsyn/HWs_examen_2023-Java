@@ -49,4 +49,8 @@ public class clsProducto {
     public String get_description() {
         return articulo.descripcion;
     }
+    Integer cantidad = 0; // La cantidad del artículo que tiene esta instancia
+    public Integer get_cantidad(){
+        return cantidad;
+    }
 }
