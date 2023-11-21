@@ -10,6 +10,7 @@ public class clsArticulo {
     public static void main(String[] args) {
 
     }
+
     @JsonProperty("codigo")
     String codigo;
     String descripcion;
@@ -38,6 +39,16 @@ public class clsArticulo {
 
     @JsonProperty("existencia")
     int en_reserva;
+
+    public int en_inventario() {
+        return en_reserva;
+    }
+
+    public int fetch(int amount) {
+        en_reserva -= amount;
+        return amount;
+    }
+
     float costo;
     float precio;
 
