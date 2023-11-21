@@ -14,7 +14,7 @@ public class clsQueryingWindows {
     CountDownLatch latch;
     JFrame base_frame = new JFrame("Hola mundo : Proyecto Arreglo de Objetos");
 
-    clsQueryingWindows(List<clsCliente> Clientes, List<clsFactura> Facturas) {
+    public clsQueryingWindows(List<clsCliente> Clientes, List<clsFactura> Facturas) {
         this.clientes = Clientes;
         this.facturas = Facturas;
         draw_querying_windows();
