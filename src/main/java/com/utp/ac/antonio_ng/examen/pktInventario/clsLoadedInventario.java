@@ -1,6 +1,7 @@
 package com.utp.ac.antonio_ng.examen.pktInventario;
 
 import com.utp.ac.antonio_ng.examen.pktCaja.pktProducto.clsProducto;
+import com.utp.ac.antonio_ng.examen.pktCaja.pktProducto.clsProductoInmutable;
 import com.utp.ac.antonio_ng.examen.pktResourceFiles.FileResource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,13 +23,13 @@ public class clsLoadedInventario {
     public Optional<Integer> query(String codigo) {
         if (!inventario.containsKey(codigo))
             return Optional.empty();
-        return Optional.of(inventario.get(codigo).get_cantidad());
+        return Optional.of(inventario.get(codigo).en_inventario());
     }
 
     /**
      * Método para usar cuando se puede garantizar la cantidad que queda en inventario.
      */
-    public clsProducto fetch(String codigo, int a_substraer) {
+    public clsProductoInmutable fetch(String codigo, int a_substraer) {
         return inventario.get(codigo).fetch_instance(a_substraer);
     }
 
@@ -39,13 +40,13 @@ public class clsLoadedInventario {
      * Retorna nada si no encuentra el producto en la base de datos.
      * Retorna la cantidad disponible si resulta haber menos de lo pedido.
      */
-    public Validation<Optional<Integer>, clsProducto> try_fetch(String codigo, int amount) {
+    public Validation<Optional<Integer>, clsProductoInmutable> try_fetch(String codigo, int amount) {
         if (!inventario.containsKey(codigo))
             return Validation.invalid(Optional.empty());
 
-        Validation<Optional<Integer>, clsProducto> ret;
+        Validation<Optional<Integer>, clsProductoInmutable> ret;
         clsProducto producto = inventario.get(codigo);
-        int en_inventario = producto.get_cantidad();
+        int en_inventario = producto.en_inventario();
         if (en_inventario >= amount) {
             ret = Validation.valid(fetch(codigo, amount));
         } else if (en_inventario <= 0)
@@ -65,7 +66,7 @@ public class clsLoadedInventario {
             System.exit(400);
         }
         for (clsProducto producto : lista_producto) {
-            producto.setCantidad(producto.en_reserva());
+            producto.setCantidad(producto.en_inventario());
             inventario.put(producto.get_codigo_articulo(), producto);
         }
     }

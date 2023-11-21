@@ -1,5 +1,6 @@
 package com.utp.ac.antonio_ng.examen.pktCaja.pktProducto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,11 +12,14 @@ public class clsArticulo {
     public static void main(String[] args) {
 
     }
+
     @JsonProperty("codigo")
     String codigo;
     String descripcion;
     @JsonProperty("impuesto")
     int itbms;
+    @JsonIgnore
+    public boolean EXENTO;
 
     public int retrieve_itbms() {
         return itbms;
@@ -29,6 +33,7 @@ public class clsArticulo {
             default -> ret = 0;
         }
         this.itbms = ret;
+        if (this.itbms == 0) EXENTO = true;
     }
 
     public String getItbms() {
@@ -43,7 +48,6 @@ public class clsArticulo {
 
     @JsonProperty("existencia")
     int cantidad;
-
     float costo;
     float precio;
 

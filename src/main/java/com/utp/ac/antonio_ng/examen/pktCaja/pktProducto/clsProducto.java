@@ -3,6 +3,7 @@ package com.utp.ac.antonio_ng.examen.pktCaja.pktProducto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonIgnoreProperties
 public class clsProducto implements Cloneable {
@@ -26,7 +27,7 @@ public class clsProducto implements Cloneable {
         return articulo.descripcion;
     }
 
-    public int en_reserva() {
+    public int en_inventario() {
         return articulo.cantidad;
     }
 
@@ -40,26 +41,24 @@ public class clsProducto implements Cloneable {
         this.cantidad = cantidad;
     }
 
-    @Override
-    protected Object clone() {
-        Object clone = null;
-        try {
-            clone = super.clone();
-        } catch (Exception e) {
-            System.out.println("Falló la clonación.....\n" + e);
-        }
-        return clone;
-    }
-
     /**
      * Devuelve una copia de la clase, pero con una cantidad definida
      *
      * @return
      */
-    public clsProducto fetch_instance(int cantidad) {
-        clsProducto ret = (clsProducto) clone();
+    public clsProductoInmutable fetch_instance(int cantidad) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        clsProductoInmutable ret = null;
+        try {
+            String producto_as_string = objectMapper.writeValueAsString(this);
+            ret = objectMapper.readValue(producto_as_string, clsProductoInmutable.class);
+        } catch (Exception e) {
+            System.out.printf("Hubo un problema convirtiendo el objeto con codigo %s\n", this.get_codigo_articulo());
+            System.exit(1);
+        }
+        ret.setCantidad(cantidad);
         articulo.cantidad -= cantidad;
-        ret.cantidad = cantidad;
+        setCantidad(articulo.cantidad);
         return ret;
     }
 }
