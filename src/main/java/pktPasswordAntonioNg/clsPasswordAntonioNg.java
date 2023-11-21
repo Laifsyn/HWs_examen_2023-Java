@@ -14,14 +14,22 @@ public class clsPasswordAntonioNg {
     // Solo me faltaba una manera de saber si se logró iniciar sesión de manera exitosa, asi que creé un acceso publico a la variable
 
     public static void main(String[] args) {
-        is_logged_in=false;
+        if (!clsPasswordAntonioNg.esperar_inicio_sesion()) {
+            JOptionPane.showMessageDialog(null, "Inicio de sesión fallada. El programa se cerrará");
+            System.exit(0);
+        }
+        System.out.println("Hola. Acabamos de leer. Inicio de sesión existosa");
+    }
+
+    public static boolean esperar_inicio_sesion() {
+        is_logged_in = false;
         boolean end = false;
 
         clsPasswordAntonioNg instance = new clsPasswordAntonioNg();
         while (!end) {
             end = instance.spawn();
         }
-        System.out.println("Hola. Acabamos de leer");
+        return is_logged_in;
     }
 
     boolean spawn() {
@@ -31,7 +39,7 @@ public class clsPasswordAntonioNg {
         if (this.usuario == null)
             return false; // Intentamos denuevo si decide cancelar por accidente.
         while (this.attempts <= password_attempts) {
-            int x = JOptionPane.showConfirmDialog(null, new Object[]{new JLabel("Bienvenido a Stark CO. " + this.usuario), titulo, objLeerPasword}, "Inicio de Sesion",JOptionPane.OK_CANCEL_OPTION);
+            int x = JOptionPane.showConfirmDialog(null, new Object[]{new JLabel("Bienvenido a Stark CO. " + this.usuario), titulo, objLeerPasword}, "Inicio de Sesion", JOptionPane.OK_CANCEL_OPTION);
             // El usuario oprimio un boton distinto a OK
             if (x != 0) {
                 JOptionPane.showMessageDialog(null, "Decidio cancelar el programa.");
@@ -60,7 +68,7 @@ public class clsPasswordAntonioNg {
         }
         if (this.attempts > password_attempts)
             JOptionPane.showMessageDialog(null, "Lo siento " + usuario + "\nHable con su supervisor para recuperar su contraseña");
-         else
+        else
             JOptionPane.showMessageDialog(null, usuario + " Gracias por utilizar nuestro software");
         return true;
     }
