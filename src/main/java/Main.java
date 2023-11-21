@@ -1,10 +1,12 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
+import pktCaja.clsCliente;
+import pktCaja.clsFactura;
+import pktCaja.clsQueryingWindows;
 import pktResourceFiles.FileResource;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 

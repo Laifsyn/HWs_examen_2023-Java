@@ -1,3 +1,5 @@
+package pktCaja;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,7 +39,7 @@ public class clsFactura {
     }
 
     /**
-     * Ejemplo de Serialización de un string JSON a clsFactura
+     * Ejemplo de Serialización de un string JSON a pktCaja.clsFactura
      * */
     public static void main(String[] args) {
         try {

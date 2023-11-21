@@ -1,3 +1,5 @@
+package pktCaja;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pktResourceFiles.FileResource;
 
@@ -164,7 +166,7 @@ class TemplateReporte {
         panel.add(bt, constraints);
     }
 /**
- * Genera el reporte completo - Como datos de pruebas, usa un clsCliente, y procesa todos los datos en el clsFactura[] brindado
+ * Genera el reporte completo - Como datos de pruebas, usa un pktCaja.clsCliente, y procesa todos los datos en el pktCaja.clsFactura[] brindado
  * */
     public static void main(String[] args) {
 
@@ -241,7 +243,7 @@ class FacturaTable extends JTable {
 
     List<clsFactura> lista_facturas;
 /*
-* Genera la tabla de información de los datos. Usa un clsFactura[] como argumento
+* Genera la tabla de información de los datos. Usa un pktCaja.clsFactura[] como argumento
 * */
     public static void main(String[] args) throws URISyntaxException, IOException {
 
