@@ -1,6 +1,3 @@
 result_file.*
-/.gradle/
+.gradle/
 /build/
-/.gradle/8.2/*
-*.bin
-*.lock

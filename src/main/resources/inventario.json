@@ -1,0 +1,84 @@
+{
+  "data": [
+    {
+      "CODIGO": "ABC000",
+      "DESCRIPCION": "REFRIGERADORA",
+      "IMPUESTO": "7",
+      "CANTIDAD EXISTENTE": 1,
+      "PRECIO UNITARIO": 495.95,
+      "PRECIO DE VENTA": 570.34
+    },
+    {
+      "CODIGO": "XYZ100",
+      "DESCRIPCION": "MARCADORES PARA TABLEROS",
+      "IMPUESTO": "0",
+      "CANTIDAD EXISTENTE": 25,
+      "PRECIO UNITARIO": 38.95,
+      "PRECIO DE VENTA": 44.79
+    },
+    {
+      "CODIGO": "QWE200",
+      "DESCRIPCION": "PAÑALES DESECHABLES",
+      "IMPUESTO": "0",
+      "CANTIDAD EXISTENTE": 40,
+      "PRECIO UNITARIO": 10.95,
+      "PRECIO DE VENTA": 12.59
+    },
+    {
+      "CODIGO": "RST300",
+      "DESCRIPCION": "CERVEZA PANAMA",
+      "IMPUESTO": "1",
+      "CANTIDAD EXISTENTE": 35,
+      "PRECIO UNITARIO": 15,
+      "PRECIO DE VENTA": 20
+    },
+    {
+      "CODIGO": "DEF400",
+      "DESCRIPCION": "ABANICO DE PEDESTAL",
+      "IMPUESTO": "7",
+      "CANTIDAD EXISTENTE": 15,
+      "PRECIO UNITARIO": 35.95,
+      "PRECIO DE VENTA": 41.34
+    },
+    {
+      "CODIGO": "JKL500",
+      "DESCRIPCION": "CUADERNOS DOBLE RAYA",
+      "IMPUESTO": "0",
+      "CANTIDAD EXISTENTE": 12,
+      "PRECIO UNITARIO": 25.95,
+      "PRECIO DE VENTA": 29.84
+    },
+    {
+      "CODIGO": "FGH600",
+      "DESCRIPCION": "MESA DE PING PONG",
+      "IMPUESTO": "7",
+      "CANTIDAD EXISTENTE": 5,
+      "PRECIO UNITARIO": 75.85,
+      "PRECIO DE VENTA": 87.22
+    },
+    {
+      "CODIGO": "HIJ700",
+      "DESCRIPCION": "FRESAS CONGELADAS",
+      "IMPUESTO": "0",
+      "CANTIDAD EXISTENTE": 50,
+      "PRECIO UNITARIO": 12.95,
+      "PRECIO DE VENTA": 14.89
+    },
+    {
+      "CODIGO": "BCX800",
+      "DESCRIPCION": "MESA REDONDAS",
+      "IMPUESTO": "7",
+      "CANTIDAD EXISTENTE": 10,
+      "PRECIO UNITARIO": 125.85,
+      "PRECIO DE VENTA": 144.72
+    },
+    {
+      "CODIGO": "VNX900",
+      "DESCRIPCION": "LÁPICES DE COLORES",
+      "IMPUESTO": "0",
+      "CANTIDAD EXISTENTE": 25,
+      "PRECIO UNITARIO": 12.5,
+      "PRECIO DE VENTA": 14.37
+    }
+  ]
+}
