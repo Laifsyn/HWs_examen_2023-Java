@@ -1,4 +1,4 @@
-package pktCaja;
+package com.utp.ac.antonio_ng.examen.pktCaja;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,7 +29,7 @@ public class clsCliente {
     public clsCliente() {
     }
 /*
-* Ejemplo de serialización de una cadena JSON a pktCaja.clsCliente
+* Ejemplo de serialización de una cadena JSON a com.utp.ac.antonio_ng.examen.pktCaja.clsCliente
 * */
     public static void main(String[] args) {
         try {

@@ -1,4 +1,4 @@
-package pktResourceFiles;
+package com.utp.ac.antonio_ng.examen.pktResourceFiles;
 
 import java.io.*;
 import java.net.URISyntaxException;

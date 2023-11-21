@@ -1,4 +1,4 @@
-package pktCaja.pktProducto;
+package com.utp.ac.antonio_ng.examen.pktCaja.pktProducto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

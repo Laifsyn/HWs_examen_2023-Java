@@ -1,4 +1,4 @@
-package pktPasswordAntonioNg;
+package com.utp.ac.antonio_ng.examen.pktPasswordAntonioNg;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;

@@ -1,4 +1,4 @@
-package pktCaja;
+package com.utp.ac.antonio_ng.examen.pktCaja;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,7 +39,7 @@ public class clsFactura {
     }
 
     /**
-     * Ejemplo de Serialización de un string JSON a pktCaja.clsFactura
+     * Ejemplo de Serialización de un string JSON a com.utp.ac.antonio_ng.examen.pktCaja.clsFactura
      * */
     public static void main(String[] args) {
         try {

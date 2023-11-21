@@ -1,4 +1,4 @@
-package pktCaja;
+package com.utp.ac.antonio_ng.examen.pktCaja;
 
 import javax.swing.*;
 import java.awt.*;
