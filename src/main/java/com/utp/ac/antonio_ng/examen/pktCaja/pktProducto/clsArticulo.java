@@ -3,14 +3,14 @@ package com.utp.ac.antonio_ng.examen.pktCaja.pktProducto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.utp.ac.antonio_ng.examen.pktInventario.clsLoadedInventario;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-class clsArticulo {
+public class clsArticulo {
     public static void main(String[] args) {
 
     }
-
     @JsonProperty("codigo")
     String codigo;
     String descripcion;
@@ -42,16 +42,7 @@ class clsArticulo {
     }
 
     @JsonProperty("existencia")
-    int en_reserva;
-
-    public int en_inventario() {
-        return en_reserva;
-    }
-
-    public int fetch(int amount) {
-        en_reserva -= amount;
-        return amount;
-    }
+    int cantidad;
 
     float costo;
     float precio;
