@@ -11,6 +11,11 @@ public class clsProducto implements Cloneable {
     @JsonInclude
     clsArticulo articulo;
 
+    @Override
+    public String toString() {
+        return articulo.toString();
+    }
+
     public String get_codigo_articulo() {
         return articulo.codigo;
     }

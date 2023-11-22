@@ -5,14 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.utp.ac.antonio_ng.examen.pktCaja.clsCliente;
-import com.utp.ac.antonio_ng.examen.pktCaja.clsFactura;
-import com.utp.ac.antonio_ng.examen.pktInventario.clsLoadedInventario;
 import com.utp.ac.antonio_ng.examen.pktResourceFiles.FileResource;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 

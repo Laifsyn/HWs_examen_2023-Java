@@ -59,13 +59,14 @@ public class clsLoadedInventario {
     public clsLoadedInventario() {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            File input_stream = new FileResource().getFileFromResource("lista_productos.json");
+            File input_stream = new FileResource().getFileFromResource("inventario.json");
             lista_producto = Arrays.asList(mapper.treeToValue(mapper.readTree(input_stream).get("data"), clsProducto[].class));
         } catch (Exception e) {
             System.out.println("Error al leer los datos.......\n" + e);
             System.exit(400);
         }
         for (clsProducto producto : lista_producto) {
+            System.out.println(producto.toString());
             producto.setCantidad(producto.en_inventario());
             inventario.put(producto.get_codigo_articulo(), producto);
         }
