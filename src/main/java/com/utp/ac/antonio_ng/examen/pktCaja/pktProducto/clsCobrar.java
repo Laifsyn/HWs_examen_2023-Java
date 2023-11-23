@@ -14,9 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -99,8 +97,10 @@ public class clsCobrar {
         constraints.anchor = GridBagConstraints.WEST;
 
         // Buton de Ingresar Nombre
-        JButton btn_ingresar_nombre = new JButton("Ingresar Nombre");
-        panel.add(btn_ingresar_nombre, constraints);
+        {
+            JButton btn_ingresar_nombre = new JButton("Ingresar Nombre");
+            panel.add(btn_ingresar_nombre, constraints);
+        }
 
         // Buton Ingresar Articulo y Entrada de Datos
         ButtonAgregar btn_ingresar_articulo;
@@ -125,6 +125,7 @@ public class clsCobrar {
             constraints = original_constraints;
             panel.add(sub_panel, constraints);
         }
+
         // Cantidad
         {
             constraints.gridx = 0;
@@ -146,6 +147,7 @@ public class clsCobrar {
             constraints = original_constraints;
             panel.add(sub_panel, constraints);
         }
+
         // Agregar Teclado Numérico
         {
             GridBagConstraints original_constraints = (GridBagConstraints) constraints.clone();
@@ -202,7 +204,10 @@ class ButtonAgregar extends JButton {
             Tuple2<String, Integer> inputs = last_valid_input.get();
             Optional<clsProductoInmutable> producto = tabla_de_datos.try_insert_producto(inputs._1, inputs._2);
             if (producto.isEmpty()) return;
-            System.out.println(producto.get());
+            tabla_de_datos.insert_producto(producto.get());
+            TextFieldIngresarCodigo.text_field.get().requestFocus();
+            TextFieldIngresarCodigo.text_field.get().selectAll();
+            if (input_is_valid().isEmpty()) block_button();
         });
     }
 
@@ -228,18 +233,16 @@ class ButtonAgregar extends JButton {
         return last_valid_input;
     }
 
-    boolean block_button() {
+    void block_button() {
         setForeground(Color.BLACK);
         setBackground(Color.RED);
         setEnabled(false);
-        return true;
     }
 
-    boolean unblock_button() {
+    void unblock_button() {
         setEnabled(true);
         setBackground(Color.BLUE.darker());
         setForeground(Color.WHITE);
-        return false;
     }
 
 }
@@ -305,12 +308,28 @@ class clsTablaDeArticulos {
             return try_insert_producto(codigo, cantidad_sugerida);
         }
         clsProductoInmutable producto = fetch_result.get();
-        insert_producto(producto);
         return Optional.of(producto);
     }
 
-    private void insert_producto(clsProductoInmutable producto) {
+    Integer line = 0;
+    public ArrayList<clsProductoInmutable> productos_en_la_tabla = new ArrayList<>();
 
+    void insert_producto(clsProductoInmutable producto) {
+        line++;
+
+        DefaultTableModel model = (DefaultTableModel) tabla.getModel();
+        if (line > 1 && productos_en_la_tabla.get(line - 2).get_codigo_articulo().equals(producto.get_codigo_articulo())) {
+            clsProductoInmutable last_input = productos_en_la_tabla.get(line - 2);
+            producto.setCantidad(producto.getCantidad() + last_input.getCantidad());
+            line--;
+            model.removeRow(line - 1);
+            productos_en_la_tabla.remove(line - 1);
+        }
+        productos_en_la_tabla.add(producto);
+//        System.out.println("Line: " + line);
+//        entradas.forEach(System.out::println);
+        Object[] row = new Object[]{line, producto.getCantidad(), producto.get_venta(), producto.get_description(), String.format("%.2f", producto.getCantidad() * producto.get_venta()), producto.articulo.getItbms()};
+        model.addRow(row);
     }
 
 }
