@@ -157,12 +157,11 @@ public class clsCobrar {
             constraints.weightx = 11;
             constraints.gridwidth = 1;
             JPanel digits_panel = new JPanel(new GridLayout(4, 3, 5, 5));
-            digits_panel.setSize(300, 300);
-            digits_panel.setBackground(Color.CYAN);
+//            digits_panel.setBackground(Color.CYAN);
             JTextArea text_area = new JTextArea();
             for (Integer index : new Integer[]{7, 8, 9, 4, 5, 6, 1, 2, 3, -1, 0, -2}) {
                 NumericButton btn = new NumericButton(index, text_area);
-                btn.setPreferredSize(new Dimension(80, 40));
+                btn.setPreferredSize(new Dimension(100, 50));
                 digits_panel.add(btn);
             }
             Dimension text_area_prefered_size = digits_panel.getPreferredSize();
@@ -179,14 +178,12 @@ public class clsCobrar {
             panel.add(sub_panel, constraints);
             constraints = original_constraints;
         }
-        // Acoplamos la Tabla de datos
-        {
-
-        }
         frame.add(panel);
     }
 
     void acoplar_resultado_de_ingresos(JFrame frame) {
+        // Acoplamos la Tabla de datos
+        frame.add(tabla.scroll_pane);
     }
 
 }
@@ -204,6 +201,10 @@ class ButtonAgregar extends JButton {
         addActionListener(e -> {
             if (last_valid_input.isEmpty()) return;
             Tuple2<String, Integer> inputs = last_valid_input.get();
+            Optional<clsProductoInmutable> producto = tabla_de_datos.try_insert_producto(inputs._1, inputs._2);
+            if (producto.isEmpty())
+                return;
+            System.out.println(producto.get());
         });
     }
 
@@ -250,18 +251,25 @@ class clsTablaDeArticulos {
     }
 
     private static final String[] Columnas = new String[]{"Linea", "Cantidad", "Precio", "Descripcion", "Subtotal", "%"};
+    private static final Integer[] Columnas_width = new Integer[]{5, 10, 40, 200, 40, 10};
     final clsLoadedInventario inventario;
+    JScrollPane scroll_pane;
     JTable tabla = new JTable() {
         {
-            int columna_descripcion = 4;
+            int columna_descripcion = 3;
             DefaultTableModel model = new DefaultTableModel();
             // Agregamos los nombres de las columnas
             for (String name : Columnas)
                 model.addColumn(name);
+
             // Actualizamos el modelo de la tabla
             setModel(model);
+
             // Editamos la anchura de descripción
-            getColumnModel().getColumn(columna_descripcion).setPreferredWidth(60);
+            for (int index = 0; index < Columnas.length; index++)
+                getColumnModel().getColumn(index).setPreferredWidth(Columnas_width[index]);
+
+
         }
 
         @Override
@@ -272,6 +280,11 @@ class clsTablaDeArticulos {
 
     clsTablaDeArticulos(clsLoadedInventario inventario) {
         this.inventario = inventario;
+        scroll_pane = new JScrollPane(tabla);
+        int suma = 0;
+        for (Integer numero : Columnas_width)
+            suma += numero;
+        scroll_pane.setPreferredSize(new Dimension(suma, 200));
     }
 
     /**
@@ -407,13 +420,6 @@ class NumericButton extends JButton {
 
 }
 
-class staticLabel extends JLabel {
-    static JLabel instance = new JLabel();
-
-    static void _setText(String text) {
-        instance.setText(text);
-    }
-}
 
 class RandomText {
     static String[] Block_1 = new String[]{"Button has no assigned function.", "Clicking holds no consequential impact.", "No outcome from repeated button presses.", "Functionality remains inert, unaffected by clicks.", "Absence of programmed response to clicks.", "Button lacks predefined operational significance.", "Repeated clicks yield no discernible effect.", "No action results from persistent clicks.", "Button remains unresponsive to user input.", "Clicking won't initiate any programmed action.", "Programmed response is nonexistent for clicks.", "No functional assignment for button action.", "Persistent clicking won't alter system state.", "Button's purpose is undefined, inert.", "Clicking provides no tangible system feedback."};
