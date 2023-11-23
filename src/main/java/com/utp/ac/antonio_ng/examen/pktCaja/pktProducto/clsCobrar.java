@@ -4,7 +4,6 @@ import com.utp.ac.antonio_ng.examen.pktCaja.clsCliente;
 import com.utp.ac.antonio_ng.examen.pktInventario.clsLoadedInventario;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import io.vavr.control.Option;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 
@@ -14,11 +13,11 @@ import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.List;
 
 /**
  * Code Blocking Class - La finalización del i/o genera una lista de Productos
@@ -202,8 +201,7 @@ class ButtonAgregar extends JButton {
             if (last_valid_input.isEmpty()) return;
             Tuple2<String, Integer> inputs = last_valid_input.get();
             Optional<clsProductoInmutable> producto = tabla_de_datos.try_insert_producto(inputs._1, inputs._2);
-            if (producto.isEmpty())
-                return;
+            if (producto.isEmpty()) return;
             System.out.println(producto.get());
         });
     }
@@ -222,6 +220,9 @@ class ButtonAgregar extends JButton {
 
         Try<Integer> attempt = Try.of(() -> Integer.parseInt(cantidad));
         if (attempt.isFailure()) return Optional.empty();
+
+        Optional<Integer> query_result = inventario.query(codigo);
+        if (attempt.get() <= 0 || query_result.isEmpty() || query_result.get() <= 0) return Optional.empty();
 
         last_valid_input = Optional.of(Tuple.of(codigo, attempt.get()));
         return last_valid_input;
@@ -295,6 +296,8 @@ class clsTablaDeArticulos {
         if (fetch_result.isInvalid()) {
             if (fetch_result.getError().isEmpty()) return Optional.empty();
             int cantidad_sugerida = fetch_result.getError().get();
+            if (cantidad_sugerida <= 0) return Optional.empty();
+
             String mensaje = String.format("El inventario no tiene >%d< unidades, pero tiene >%d< unidades disponibles. Desea llevarse lo que queda?", amount, cantidad_sugerida);
             int result = JOptionPane.showConfirmDialog(null, mensaje, "Confirmar comprar menos....", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             // 1 = No
