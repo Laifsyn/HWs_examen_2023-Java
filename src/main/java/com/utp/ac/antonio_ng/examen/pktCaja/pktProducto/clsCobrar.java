@@ -11,11 +11,15 @@ import io.vavr.control.Validation;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -23,32 +27,50 @@ import java.util.concurrent.CountDownLatch;
  */
 public class clsCobrar {
 
-    public static void main(String[] args) {
-        System.setProperty("file.encoding", "UTF-16");
-//        List<clsArticulo> e = clsArticulo.generar_datos();
+    public static void main(String[] args) throws InterruptedException {
+        System.setProperty("file.encoding", "UTF-8");
         clsLoadedInventario inventario = new clsLoadedInventario();
-//        System.out.println();
+
+        System.out.println("Se debió haber generado la venta?");
         clsCobrar.facturar_al_cliente(inventario);
+        inventario.print_inventario();
     }
 
 
-    public static Tuple2<clsCliente, List<clsProductoInmutable>> facturar_al_cliente(clsLoadedInventario inventario) {
+    public static void facturar_al_cliente(clsLoadedInventario inventario) {
         CountDownLatch latch = new CountDownLatch(1);
-        clsCobrar GUI = new clsCobrar(inventario, latch);
-        try {
-            latch.await();
-        } catch (Exception unexpected) {
-            System.out.println("Unexpected error: " + unexpected);
-            System.exit(1);
+        clsCobrar ventana_facturacion = new clsCobrar(inventario, latch);
+        while (true) {
+            try {
+                ventana_facturacion.latch.await();
+            } catch (InterruptedException e) {
+                System.out.println("Unexpected Exception:" + e);
+                System.exit(1);
+            }
+            System.out.println("Esperando reporte cierre");
+            try {
+                ventana_facturacion.inner_latch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            if (JOptionPane.showConfirmDialog(null, "Desea continuar facturando?") != 0) {
+                ventana_facturacion.frame.dispose();
+                break;
+            }
+            ventana_facturacion.frame.dispose();
+            ventana_facturacion = new clsCobrar(inventario, new CountDownLatch(1));
+            System.out.println("Estado actual del inventario:...");
+            inventario.print_inventario();
         }
-
-        return null;
     }
 
+    clsFactura reporte_factura;
     clsLoadedInventario inventario;
     JButton btn_totalizar = new JButton("Facturar $0.00");
+    JButton btn_ingresar_nombre;
     clsCliente cliente = new clsCliente("");
     CountDownLatch latch;
+    CountDownLatch inner_latch;
     clsTablaDeArticulos tabla;
     JFrame frame = new JFrame("Cobrar... Antonio");
 
@@ -58,7 +80,7 @@ public class clsCobrar {
         latch = countdown_latch;
         Dimension dimension = new Dimension(800, 800);
 
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setSize(dimension);
         frame.setLayout(new GridLayout(3, 1) {});
         acoplar_header(frame);
@@ -68,6 +90,30 @@ public class clsCobrar {
 //        e.
         frame.setVisible(true);
         frame.pack();
+        frame.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {}
+
+            @Override
+            public void windowClosing(WindowEvent e) {}
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                latch.countDown();
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {}
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {}
+
+            @Override
+            public void windowActivated(WindowEvent e) {}
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {}
+        });
     }
 
     void acoplar_header(JFrame frame) {
@@ -101,14 +147,13 @@ public class clsCobrar {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
-        System.out.println(constraints.weightx);
         constraints.weightx = .1;
         constraints.insets = new Insets(5, 5, 5, 5);
         constraints.anchor = GridBagConstraints.WEST;
 
         // Buton de Ingresar Nombre
         {
-            JButton btn_ingresar_nombre = new JButton("Ingresar Nombre");
+            btn_ingresar_nombre = new JButton("Ingresar Nombre");
             btn_ingresar_nombre.addActionListener(e -> {
 
                 String initial_value = cliente.get_nombre();
@@ -178,9 +223,16 @@ public class clsCobrar {
             JPanel sub_panel = new JPanel();
             JButton boton = btn_totalizar;
             boton.setVisible(false);
+
             boton.addActionListener(e -> {
-                clsFactura reporte = clsFactura.generarReporte(Tuple.of(cliente, tabla.productos_en_la_tabla));
+                frame.setEnabled(false);
+                System.out.println("Generamos el reporte");
+                Tuple2<clsFactura, CountDownLatch> set = clsFactura.generarReporte(Tuple.of(cliente,
+                        tabla.productos_en_la_tabla), new CountDownLatch(1));
+                inner_latch = set._2;
+                latch.countDown();
             });
+
             tabla.tabla.getModel().addTableModelListener(e -> {
                 boton.setVisible(true);
                 boton.setText(String.format("Facturar: %.2f", tabla.totalizar()));
@@ -498,53 +550,55 @@ class RandomText {
             "impact.", "No outcome from repeated button presses.", "Functionality remains inert, unaffected by " +
             "clicks" + ".", "Absence of programmed response to clicks.", "Button lacks predefined operational " +
             "significance.", "Repeated clicks yield no discernible effect.", "No action results from persistent " +
-            "clicks.", "Button " + "remains unresponsive to user input.", "Clicking won't initiate any programmed " +
-            "action.", "Programmed " + "response is nonexistent for clicks.", "No functional assignment for button " +
-            "action.", "Persistent " + "clicking won't alter system state.", "Button's purpose is undefined, inert.",
-            "Clicking provides no " + "tangible system feedback."};
+            "clicks.", "Button " + "remains unresponsive to user input.",
+            "Clicking won't initiate any programmed " + "action.", "Programmed " + "response is nonexistent for " +
+            "clicks.", "No functional assignment for button " + "action.", "Persistent " + "clicking won't alter " +
+            "system state.", "Button's purpose is undefined, inert.", "Clicking provides no " + "tangible system " +
+            "feedback."};
     static String[] Block_2 = new String[]{"Clicking like it owes you money, huh?",
-            "Spamming won't summon a pizza, " + "just saying.", "Are you trying to break the internet, one click at a" +
-            " time?", "This isn't Morse code for " + "'bring snacks,' you know?", "Button abuse! The pixels are " +
-            "crying!", "Congratulations! You've just won " + "the 'Clicker of the Day' award.", "Pushing buttons like" +
-            " it's an Olympic sport.", "Clicking won't make it" + " a magic portal, but nice try.", "Someone's on a " +
-            "mission to redefine 'persistent.'", "Judging by your " + "clicks, you're training for a thumb-wrestling " +
-            "championship.", "Button Olympics training in progress.", "Expecting confetti? Keep clicking.",
-            "Desperate for attention? Button understands.", "Button is not a " + "stress ball.", "Trying to unlock " +
-            "secret cat videos?", "Click therapy? Seeking zen through buttons.", "Button applause: click harder for " +
-            "encore.", "Button whisperer, mastering the silent art.", "World record" + " for clicks: within reach.",
-            "Button pusher extraordinaire reporting for duty.", "Button honors your " + "relentless dedication.",
-            "Breaking news: Button unimpressed, needs vacation.", "Button says: 'Calm down," + " warrior.'", "Click " +
-            "count exceeds cosmic expectations.", "Button endorses patience, not spam.", "Your " + "click: a " +
-            "masterpiece of persistence.", "Button contemplates life during your clicks.", "Button predicts " +
-            "Nobel for clickology soon.", "Click wizardry: unmatched, slightly eccentric.",
-            "Button wonders if you " + "need coffee.",};
+            "Spamming won't summon a pizza, " + "just saying.", "Are you trying to break the internet, one click at " +
+            "a" + " time?", "This isn't Morse code for " + "'bring snacks,' you know?", "Button abuse! The pixels are" +
+            " " + "crying!", "Congratulations! You've just won " + "the 'Clicker of the Day' award.", "Pushing " +
+            "buttons like" + " it's an Olympic sport.", "Clicking won't make it" + " a magic portal, but nice try.",
+            "Someone's on a " + "mission to redefine 'persistent.'", "Judging by your " + "clicks, you're training " +
+            "for a thumb-wrestling " + "championship.", "Button Olympics training in progress.", "Expecting confetti?" +
+            " Keep clicking.", "Desperate for attention? Button understands.", "Button is not a " + "stress ball.",
+            "Trying to unlock " + "secret cat videos?", "Click therapy? Seeking zen through buttons.", "Button " +
+            "applause: click harder for " + "encore.", "Button whisperer, mastering the silent art.",
+            "World record" + " for clicks: within reach.", "Button pusher extraordinaire reporting for duty.",
+            "Button honors your " + "relentless dedication.", "Breaking news: Button unimpressed, needs vacation.",
+            "Button says: 'Calm down," + " warrior.'", "Click " + "count exceeds cosmic expectations.", "Button " +
+            "endorses patience, not spam.", "Your " + "click: a " + "masterpiece of persistence.", "Button " +
+            "contemplates life during your clicks.", "Button predicts " + "Nobel for clickology soon.", "Click " +
+            "wizardry: unmatched, slightly eccentric.", "Button wonders if you " + "need coffee.",};
     static String[] Block_3 = new String[]{"Still clicking? Puzzle intensifies.",
             "Confused by relentless clicks, " + "seriously.", "Program bewildered. Infinite clicks detected.",
             "Button mystified by endless persistence.", "Endless clicks defy all logic.", "Program bewildered: " +
             "endless clicks persist.", "Infinity clicks: " + "program's existential crisis.", "Program ponders: " +
             "clicks beyond comprehension.", "Clicks exceed " + "algorithmic comprehension limit.", "Persistent " +
-            "clicking: program in deep confusion.", "Endless clicks " + "baffle program's logic.", "Infinite clicks: " +
-            "program questions reality.", "Endless persistence confuses " + "programmed logic.", "Program mystified: " +
-            "clicks never-ending saga.", "Clicks surpass program's patience " + "threshold.", "Unyielding clicks: " +
-            "program in utter disbelief.", "Program contemplates: clicks without " + "purpose.", "Clicks persist, " +
-            "program's sanity questioned.", "Endless clicks: program in silent chaos.", "Program bewildered: clicks " +
-            "relentless mystery.", "Clicks transcend program's understanding realm.", "Program astonished: clicks " +
-            "beyond explanation.", "Unending clicks: program's perpetual surprise.", "Clicks defy program's expected " +
-            "limits."};
+            "clicking: program in deep confusion.", "Endless clicks " + "baffle program's logic.", "Infinite clicks: "
+            + "program questions reality.", "Endless persistence confuses " + "programmed logic.", "Program " +
+            "mystified: " + "clicks never-ending saga.", "Clicks surpass program's patience " + "threshold.",
+            "Unyielding clicks: " + "program in utter disbelief.", "Program contemplates: clicks without " + "purpose" +
+            ".", "Clicks persist, " + "program's sanity questioned.", "Endless clicks: program in silent chaos.",
+            "Program bewildered: clicks " + "relentless mystery.", "Clicks transcend program's understanding realm.",
+            "Program astonished: clicks " + "beyond explanation.", "Unending clicks: program's perpetual surprise.",
+            "Clicks defy program's expected " + "limits."};
     static String[] Block_4 = new String[]{"Click wizard: Why are you pressing?",
             "Button philosophy: What is the " + "truth of clicking?", "Button says: Halt, warrior.", "Button " +
-            "meditation: Continual clicking and " + "tranquility.", "Click prophet: Unpredictable clicks.", "Button " +
-            "apocalypse: Silent clicks.", "Press for " + "tea, the button knows.", "Click maniac: Continuous clicking" +
-            " has no end.", "Transcendent click: Cosmic " + "clicks anticipated.", "Button miracle: Inexplicable " +
-            "clicks.", "Your click - a masterpiece of persistence" + ".", "Button mystery: Unsolvable clicks.",
-            "Button Zen master: Clicking is Zen.", "Click artist: " + "Unpredictable masterpiece.", "Button physics: " +
-            "Soundless clicks.", "Button genius: Click for brilliance.", "Button meditation: Profound philosophy of " +
-            "clicking.", "Click magic: Magical and unpredictable clicks.", "Button poetry: Rhythm of clicks.", "Press" +
-            " for laughter, the button knows.", "Click miracle: Continual " + "mysterious clicks.", "Click prophecy: " +
-            "Unpredictable clicks.", "Button silence: Soundless clicks.", "Button genius: Click for brilliance.",
-            "Button poetry: Rhythm of clicks.", "Click magic: Magical and " + "unpredictable clicks.", "Button " +
-            "adventure: Journey of clicks.", "Button philosopher: Press for wisdom.", "Button art: Painting with " +
-            "clicks.", "Click prophet: Unpredictable clicks."};
+            "meditation: Continual clicking and " + "tranquility.", "Click prophet: Unpredictable clicks.",
+            "Button " + "apocalypse: Silent clicks.", "Press for " + "tea, the button knows.", "Click maniac: " +
+            "Continuous clicking" + " has no end.", "Transcendent click: Cosmic " + "clicks anticipated.", "Button " +
+            "miracle: Inexplicable " + "clicks.", "Your click - a masterpiece of persistence" + ".", "Button mystery:" +
+            " Unsolvable clicks.", "Button Zen master: Clicking is Zen.", "Click artist: " + "Unpredictable " +
+            "masterpiece.", "Button physics: " + "Soundless clicks.", "Button genius: Click for brilliance.", "Button" +
+            " meditation: Profound philosophy of " + "clicking.", "Click magic: Magical and unpredictable clicks.",
+            "Button poetry: Rhythm of clicks.", "Press" + " for laughter, the button knows.", "Click miracle: " +
+            "Continual " + "mysterious clicks.", "Click prophecy: " + "Unpredictable clicks.", "Button silence: " +
+            "Soundless clicks.", "Button genius: Click for brilliance.", "Button poetry: Rhythm of clicks.", "Click " +
+            "magic: Magical and " + "unpredictable clicks.", "Button " + "adventure: Journey of clicks.", "Button " +
+            "philosopher: Press for wisdom.", "Button art: Painting with " + "clicks.", "Click prophet: Unpredictable" +
+            " clicks."};
 
     static String get(Integer input) {
         System.out.println(input);

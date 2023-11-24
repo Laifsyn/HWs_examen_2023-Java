@@ -8,14 +8,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.control.Validation;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class clsLoadedInventario {
     HashMap<String, clsProducto> inventario = new HashMap<>();
     List<clsProducto> lista_producto;
+
+    public void print_inventario() {
+    for (Map.Entry<String, clsProducto> set: inventario.entrySet()){
+        System.out.println(set.getValue().toString());
+    }
+    }
 
     /**
      * Devuelve la cantidad en inventario si hay registro
@@ -60,7 +63,8 @@ public class clsLoadedInventario {
         ObjectMapper mapper = new ObjectMapper();
         try {
             File input_stream = new FileResource().getFileFromResource("inventario.json");
-            lista_producto = Arrays.asList(mapper.treeToValue(mapper.readTree(input_stream).get("data"), clsProducto[].class));
+            lista_producto = Arrays.asList(mapper.treeToValue(mapper.readTree(input_stream).get("data"),
+                    clsProducto[].class));
         } catch (Exception e) {
             System.out.println("Error al leer los datos.......\n" + e);
             System.exit(400);

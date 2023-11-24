@@ -2,38 +2,49 @@ package com.utp.ac.antonio_ng.examen.pktCaja;
 
 import com.utp.ac.antonio_ng.examen.pktCaja.pktProducto.clsProductoInmutable;
 import com.utp.ac.antonio_ng.examen.pktInventario.clsLoadedInventario;
+import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 public class clsFactura {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         clsLoadedInventario inventario = new clsLoadedInventario();
         ArrayList<clsProductoInmutable> productos = new ArrayList<>();
         String[] codigos = new String[]{"XYZ100", "ABC000", "QWE200", "RST300", "DEF400"};
+        CountDownLatch latch = new CountDownLatch(1);
         for (String codigo : codigos)
             productos.add(inventario.fetch(codigo, 3));
-        clsFactura reporte = clsFactura.generarReporte(io.vavr.Tuple.of(new clsCliente("Nombre de Cliente"),
-                productos));
+        Tuple2<clsFactura, CountDownLatch> set = clsFactura.generarReporte(io.vavr.Tuple.of(new clsCliente("Nombre " +
+                "de" + " Cliente"), productos), latch);
+        set._2.await();
     }
 
     clsCliente cliente;
     ArrayList<clsProductoInmutable> productos;
+    public CountDownLatch latch = new CountDownLatch(1);
 
-    protected clsFactura(Tuple2<clsCliente, ArrayList<clsProductoInmutable>> datos) {
+    public clsFactura(Tuple2<clsCliente, ArrayList<clsProductoInmutable>> datos, CountDownLatch _latch) {
         cliente = datos._1;
         productos = datos._2;
+        latch = _latch;
         generar_reporte();
     }
 
-    public static clsFactura generarReporte(Tuple2<clsCliente, ArrayList<clsProductoInmutable>> datos) {
-        clsFactura reporte = new clsFactura(datos);
-        return reporte;
+    public static Tuple2<clsFactura, CountDownLatch> generarReporte(Tuple2<clsCliente,
+            ArrayList<clsProductoInmutable>> datos, CountDownLatch latch) {
+        clsFactura reporte = new clsFactura(datos, latch);
+        return Tuple.of(reporte, reporte.latch);
     }
 
     void generar_reporte() {
@@ -53,6 +64,44 @@ public class clsFactura {
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setMinimumSize(frame.getPreferredSize());
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {}
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) frame.dispose();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {}
+        });
+        frame.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {}
+
+            @Override
+            public void windowClosing(WindowEvent e) {}
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                latch.countDown();
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {}
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {}
+
+            @Override
+            public void windowActivated(WindowEvent e) {}
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                System.out.println("Window Deavtivated");
+            }
+        });
     }
 
     void acoplar_encabezado(JFrame frame, GridBagConstraints frame_constraints) {
@@ -134,6 +183,7 @@ public class clsFactura {
         // Acumulamos el impuesto, y imprimimos cada línea de impuesto
         insertar_separador(panel, constraints);
         for (Map.Entry<Integer, Double> entry : totales_itbms.entrySet()) {
+            if (Math.round(entry.getValue()) == 0) continue;
             total_impuestos += entry.getValue();
             acoplar_resultado(panel, constraints, new String[]{String.format("%d%%", entry.getKey()),
                     convertir_a_formato_display(entry.getValue())});
