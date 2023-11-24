@@ -45,6 +45,7 @@ public class clsCobrar {
     }
 
     clsLoadedInventario inventario;
+    JButton btn_totalizar = new JButton("Facturar $0.00");
     clsCliente cliente = new clsCliente("");
     CountDownLatch latch;
     clsTablaDeArticulos tabla;
@@ -130,7 +131,6 @@ public class clsCobrar {
             constraints.gridx = 1;
             constraints.gridy = 0;
             btn_ingresar_articulo = new ButtonAgregar(inventario, tabla);
-
             sub_panel.add(btn_ingresar_articulo, constraints);
 
             // TextField Ingresar Codigo
@@ -160,6 +160,26 @@ public class clsCobrar {
             TextFieldIngresarCantidad text_field = new TextFieldIngresarCantidad(btn_ingresar_articulo);
             sub_panel.add(text_field, constraints);
             constraints = original_constraints;
+            panel.add(sub_panel, constraints);
+        }
+
+
+        // Facturar
+        {
+            constraints.gridx = 0;
+            constraints.gridy = 3;
+
+            JPanel sub_panel = new JPanel();
+            JButton boton = btn_totalizar;
+            boton.setVisible(false);
+            boton.addActionListener(e -> {
+                // TODO: 24/11/2023
+            });
+            tabla.tabla.getModel().addTableModelListener(e -> {
+                boton.setVisible(true);
+                boton.setText(String.format("Facturar: %.2f", tabla.totalizar()));
+            });
+            sub_panel.add(boton);
             panel.add(sub_panel, constraints);
         }
 
@@ -220,6 +240,8 @@ class ButtonAgregar extends JButton {
             Optional<clsProductoInmutable> producto = tabla_de_datos.try_insert_producto(inputs._1, inputs._2);
             if (producto.isEmpty()) return;
             tabla_de_datos.insert_producto(producto.get());
+            if (TextFieldIngresarCodigo.text_field.isEmpty())
+                return;
             TextFieldIngresarCodigo.text_field.get().requestFocus();
             TextFieldIngresarCodigo.text_field.get().selectAll();
             if (input_is_valid().isEmpty()) block_button();
@@ -301,6 +323,14 @@ class clsTablaDeArticulos {
         for (Integer numero : Columnas_width)
             suma += numero;
         scroll_pane.setPreferredSize(new Dimension(suma, 200));
+    }
+
+    public double totalizar() {
+        if (productos_en_la_tabla.isEmpty()) return 0d;
+        double ret = 0d;
+        for (clsProductoInmutable producto : productos_en_la_tabla)
+            ret += producto.getCantidad() * producto.get_venta();
+        return ret;
     }
 
     /**
