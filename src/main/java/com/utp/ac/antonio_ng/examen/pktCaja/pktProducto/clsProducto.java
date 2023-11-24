@@ -39,6 +39,11 @@ public class clsProducto implements Cloneable {
     }
 
     @JsonIgnore
+    public int retrieve_itbms() {
+        return articulo.retrieve_itbms();
+    }
+
+    @JsonIgnore
     public String get_description() {
         return articulo.descripcion;
     }
@@ -51,7 +56,7 @@ public class clsProducto implements Cloneable {
     @JsonProperty("Cantidad de Instancia")
     Integer cantidad = 0; // La cantidad del artículo que tiene esta instancia
 
-    public int getCantidad() {
+    public int get_cantidad() {
         return cantidad;
     }
 
@@ -79,4 +84,5 @@ public class clsProducto implements Cloneable {
         ret.setCantidad(cantidad);
         return ret;
     }
+
 }
