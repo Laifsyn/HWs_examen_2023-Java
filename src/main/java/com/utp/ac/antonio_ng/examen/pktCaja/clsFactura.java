@@ -6,9 +6,6 @@ import io.vavr.Tuple2;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,7 +20,6 @@ public class clsFactura {
             productos.add(inventario.fetch(codigo, 3));
         clsFactura reporte = clsFactura.generarReporte(io.vavr.Tuple.of(new clsCliente("Nombre de Cliente"),
                 productos));
-
     }
 
     clsCliente cliente;
@@ -42,7 +38,6 @@ public class clsFactura {
 
     void generar_reporte() {
         JFrame frame = new JFrame("Reporte de " + cliente.get_nombre());
-//        frame.setLayout(new GridLayout(2, 1));
         frame.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridwidth = 5;
@@ -57,6 +52,7 @@ public class clsFactura {
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();
+        frame.setMinimumSize(frame.getPreferredSize());
     }
 
     void acoplar_encabezado(JFrame frame, GridBagConstraints frame_constraints) {
@@ -85,9 +81,6 @@ public class clsFactura {
         panel_inferior.setPreferredSize(new Dimension(800, 40));
         panel.setPreferredSize(new Dimension(800, 240));
         GridBagConstraints constraints = new GridBagConstraints();
-//        constraints.weightx = 1;
-//        constraints.weighty = 1;
-
         panel.add(panel_superior, constraints);
         constraints.gridx++;
         panel.add(panel_inferior, constraints);
@@ -102,10 +95,7 @@ public class clsFactura {
     }
 
     void acoplar_datos_de_productos(JFrame frame, GridBagConstraints frame_constraints) {
-        clsTablaTotales tabla = new clsTablaTotales();
-
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEtchedBorder(Color.CYAN, Color.RED));
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(0, 10, 0, 10);
@@ -113,15 +103,16 @@ public class clsFactura {
         constraints.gridy = 0;
         constraints.gridwidth = 1;
 
-
-        HashMap<Integer, Double> totales_itbms = new HashMap<Integer, Double>();
+        acoplar_titulo(panel, constraints, new String[]{"Codigo", "Descripcion", "Precio de Venta", "Cantidad",
+                "Valor"});
+        HashMap<Integer, Double> totales_itbms = new HashMap<>();
         totales_itbms.put(7, 0d);
         totales_itbms.put(10, 0d);
-        double total_neto = 0;
+        double subtotal = 0; // Total sin el impuesto
         for (clsProductoInmutable producto : productos) {
             String codigo = producto.get_codigo_articulo();
             String descripcion = producto.get_description();
-            String venta = String.valueOf(producto.get_venta());
+            String venta = convertir_a_formato_display(producto.get_venta());
             String cantidad = String.valueOf(producto.get_cantidad());
 
             double total = producto.get_venta() * producto.get_cantidad();
@@ -129,91 +120,107 @@ public class clsFactura {
                 value += producto.get_itbms() * total;
                 return value;
             });
-            total_neto += total;
-
+            subtotal += total;
             String valor = convertir_a_formato_display(total);
-            tabla.insertar_fila(new String[]{codigo, descripcion, venta, cantidad, valor});
+            acoplar_fila(panel, constraints, new String[]{codigo, descripcion, venta, cantidad, valor});
         }
-        double total = total_neto;
-        ArrayList<String> impuestos = new ArrayList<>();
-        // Calculamos el total de la venta, y formateamos el resultado
-        for (Map.Entry<Integer, Double> entry : totales_itbms.entrySet()) {
-            total += entry.getValue();
-            impuestos.add(String.format("%d%%", entry.getKey()));
+        double total = subtotal;
+        double total_impuestos = 0d;
 
-            impuestos.add(convertir_a_formato_display(entry.getValue()));
-            System.out.println("1-) " + String.format("%d%%", entry.getKey()));
-            System.out.println("2-) " + convertir_a_formato_display(entry.getValue()));
+        // Insertar SubTotal
+        insertar_separador(panel, constraints);
+        acoplar_resultado(panel, constraints, new String[]{"Subtotal: ", convertir_a_formato_display(subtotal)});
+
+        // Acumulamos el impuesto, y imprimimos cada línea de impuesto
+        insertar_separador(panel, constraints);
+        for (Map.Entry<Integer, Double> entry : totales_itbms.entrySet()) {
+            total_impuestos += entry.getValue();
+            acoplar_resultado(panel, constraints, new String[]{String.format("%d%%", entry.getKey()),
+                    convertir_a_formato_display(entry.getValue())});
         }
-        frame.add(tabla.text_area, frame_constraints);
+        total += total_impuestos;
+        insertar_separador(panel, constraints);
+        // Insertar Total de Impuestos
+        acoplar_resultado(panel, constraints, new String[]{"Total de Impuestos: ",
+                convertir_a_formato_display(total_impuestos)});
+        insertar_separador(panel, constraints);
+        insertar_separador(panel, constraints);
+        // Insertar Total
+        acoplar_resultado(panel, constraints, new String[]{"TOTAL A PAGAR: ", convertir_a_formato_display(total)});
+        acoplar_resultado(panel, constraints, new String[]{" ", ""});
+
+
+        frame.add(panel, frame_constraints);
+    }
+
+    void acoplar_titulo(JPanel panel, GridBagConstraints constraints, String[] fila) {
+        int start_x = constraints.gridx;
+
+        constraints.anchor = GridBagConstraints.CENTER;
+        for (String celda : fila) {
+            JLabel label = new JLabel(celda);
+            panel.add(label, constraints);
+            constraints.gridx++;
+        }
+        constraints.gridy++;
+        constraints.gridx = start_x;
+    }
+
+    void acoplar_fila(JPanel panel, GridBagConstraints constraints, String[] fila) {
+        int start_x = constraints.gridx;
+        for (String celda : fila) {
+            int alignment_constant = switch (constraints.gridx) {
+                case 0, 1 -> SwingConstants.LEFT;
+                case 3 -> SwingConstants.CENTER;
+                default -> SwingConstants.RIGHT;
+            };
+            int width = switch (constraints.gridx) {
+//                case 0, 4, 3 -> 100;
+                case 1 -> 260;
+                default -> 100;
+            };
+            JLabel label = new JLabel(celda);
+            label.setPreferredSize(new Dimension(width, 25));
+            label.setHorizontalAlignment(alignment_constant);
+            panel.add(label, constraints);
+            constraints.gridx++;
+        }
+        constraints.gridy++;
+        constraints.gridx = start_x;
+    }
+
+    void insertar_separador(JPanel panel, GridBagConstraints constraints) {
+        int start_x = constraints.gridx;
+        for (String celda : new String[]{"", "", "", "", "-------------------"}) {
+            JLabel label = new JLabel(celda);
+            label.setPreferredSize(new Dimension(100, 5));
+            constraints.anchor = GridBagConstraints.EAST;
+            label.setFont(label.getFont().deriveFont(16f));
+            panel.add(label, constraints);
+            constraints.gridx++;
+        }
+        constraints.gridy++;
+        constraints.gridx = start_x;
+    }
+
+    void acoplar_resultado(JPanel panel, GridBagConstraints constraints, String[] fila) {
+        int start_x = constraints.gridx;
+        for (String celda : new String[]{"", "", "", fila[0], fila[1]}) {
+            JLabel label = new JLabel(celda);
+            constraints.anchor = GridBagConstraints.EAST;
+            label.setFont(new Font("Verdana", Font.BOLD, 12));
+            panel.add(label, constraints);
+            constraints.gridx++;
+        }
+        constraints.gridy++;
+        constraints.gridx = start_x;
+
     }
 
     String convertir_a_formato_display(double numero) {
         StringBuilder resultado_de_conversion = new StringBuilder();
         Formatter formatter = new Formatter(resultado_de_conversion, Locale.US);
         formatter.format("%(,.2f", numero);
-        System.out.println("Entrada: " + numero);
         return resultado_de_conversion.toString();
     }
 }
-
-class clsTablaTotales {
-    String[] columnas = new String[]{"Código", "Descripcion", "Precio de Venta", "Cantidad", "Valor"};
-    Integer[] columnas_width = new Integer[]{20, 400, 40, 20, 60};
-    JTextArea text_area;
-
-    clsTablaTotales() {
-        text_area = new JTextArea();
-//        text_area.setEditable(false);
-        text_area.setColumns(80);
-        text_area.setTabSize(5);
-        Font font = new Font("Console", Font.BOLD,14);
-        text_area.setFont(font);
-    }
-
-    void insertar_fila(String[] fila) {
-        ((DefaultTableModel) tabla.getModel()).addRow(fila);
-    }
-
-    JTable tabla = new JTable() {
-        {
-            DefaultTableModel model = new DefaultTableModel();
-            // Agregamos los nombres de las columnas
-            for (String name : columnas)
-                model.addColumn(name);
-
-            // Actualizamos el modelo de la tabla
-            setModel(model);
-
-            // Editamos la anchura de descripción
-            for (int index = 0; index < columnas.length; index++)
-                getColumnModel().getColumn(index).setPreferredWidth(columnas_width[index]);
-        }
-
-
-        final DefaultTableCellRenderer render_right = new DefaultTableCellRenderer();
-        final DefaultTableCellRenderer render_left = new DefaultTableCellRenderer();
-        final DefaultTableCellRenderer render_middle = new DefaultTableCellRenderer();
-
-        {
-            render_right.setHorizontalAlignment(SwingConstants.RIGHT);
-            render_left.setHorizontalAlignment(SwingConstants.LEFT);
-            render_middle.setHorizontalAlignment(SwingConstants.CENTER);
-        }
-
-        @Override
-        public TableCellRenderer getCellRenderer(int row, int col) {
-            return switch (col) {
-                case 1, 2 -> render_left;
-                case 3, 5 -> render_right;
-                default -> render_middle;
-            };
-        }
-
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-    };
-}
-
