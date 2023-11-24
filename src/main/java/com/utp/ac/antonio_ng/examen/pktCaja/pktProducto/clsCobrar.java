@@ -40,10 +40,12 @@ public class clsCobrar {
             System.out.println("Unexpected error: " + unexpected);
             System.exit(1);
         }
+
         return null;
     }
 
     clsLoadedInventario inventario;
+    clsCliente cliente = new clsCliente("");
     CountDownLatch latch;
     clsTablaDeArticulos tabla;
     JFrame frame = new JFrame("Cobrar... Antonio");
@@ -99,6 +101,19 @@ public class clsCobrar {
         // Buton de Ingresar Nombre
         {
             JButton btn_ingresar_nombre = new JButton("Ingresar Nombre");
+            btn_ingresar_nombre.addActionListener(e -> {
+
+                String initial_value = cliente.get_nombre();
+                String nombre = JOptionPane.showInputDialog(null, "Ingrese su nombre", initial_value);
+                JButton this_button = ((JButton) e.getSource());
+                if (nombre == null || nombre.isBlank()) {
+                    this_button.setText("Ingresar Nombre");
+                    return;
+                }
+                cliente = new clsCliente(nombre);
+                this_button.setText("Cliente: " + cliente.get_nombre());
+            });
+            // TODO: 23/11/2023
             panel.add(btn_ingresar_nombre, constraints);
         }
 
@@ -126,7 +141,7 @@ public class clsCobrar {
             panel.add(sub_panel, constraints);
         }
 
-        // Cantidad
+        // Ingresar Cantidad
         {
             constraints.gridx = 0;
             constraints.gridy = 2;
@@ -153,7 +168,7 @@ public class clsCobrar {
             GridBagConstraints original_constraints = (GridBagConstraints) constraints.clone();
             constraints.gridx = 1;
             constraints.gridy = 0;
-            constraints.gridheight = 3;
+            constraints.gridheight = 4;
             constraints.weighty = 1;
             constraints.weightx = 11;
             constraints.gridwidth = 1;
@@ -260,7 +275,6 @@ class clsTablaDeArticulos {
     JScrollPane scroll_pane;
     JTable tabla = new JTable() {
         {
-            int columna_descripcion = 3;
             DefaultTableModel model = new DefaultTableModel();
             // Agregamos los nombres de las columnas
             for (String name : Columnas)
@@ -272,8 +286,6 @@ class clsTablaDeArticulos {
             // Editamos la anchura de descripción
             for (int index = 0; index < Columnas.length; index++)
                 getColumnModel().getColumn(index).setPreferredWidth(Columnas_width[index]);
-
-
         }
 
         @Override
@@ -326,9 +338,7 @@ class clsTablaDeArticulos {
             productos_en_la_tabla.remove(line - 1);
         }
         productos_en_la_tabla.add(producto);
-//        System.out.println("Line: " + line);
-//        entradas.forEach(System.out::println);
-        Object[] row = new Object[]{line, producto.getCantidad(), producto.get_venta(), producto.get_description(), String.format("%.2f", producto.getCantidad() * producto.get_venta()), producto.articulo.getItbms()};
+        Object[] row = new Object[]{line, producto.getCantidad(), producto.get_venta(), producto.get_description(), String.format("%.2f", producto.getCantidad() * producto.get_venta()), producto.articulo.retrieve_itbms()};
         model.addRow(row);
     }
 

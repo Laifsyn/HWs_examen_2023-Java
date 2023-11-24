@@ -62,7 +62,7 @@ public class clsArticulo {
     public void setItbms(String itbms) {
         int ret;
         switch (itbms) {
-            case "1" -> ret = 10;
+            case "1", "10" -> ret = 10;
             case "7" -> ret = 7;
             default -> ret = 0;
         }

@@ -13,11 +13,11 @@ public class clsPersona {
         return String.format("%s:{Cedula: %s, Nombre Completo: %s %s, telefono: %d}", getClass().getName(), cedula, nombre, apellido, telefono);
     }
 
-    String cedula;
-    String nombre;
-    String apellido;
+    String cedula = "";
+    String nombre = "";
+    String apellido = "";
     @JsonProperty("teléfono")
-    Integer telefono;
+    Integer telefono = 0;
 
     public void setTelefono(Integer telefono) {
         this.telefono = telefono;
@@ -49,7 +49,7 @@ public class clsPersona {
 
     @JsonIgnore
     public String getNombreCompleto() {
-        return getNombre() + " " + getApellido();
+        return (getNombre() + " " + getApellido()).trim();
     }
 
     public Integer getTelefono() {
